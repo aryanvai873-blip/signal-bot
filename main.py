@@ -4,7 +4,7 @@ from threading import Thread
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_TOKEN = os.environ.get8740724012:AAEPwE-ugiB-cXjDF-cWBnZ4LMU1dehaYQ8("BOT_TOKEN")
 
 flask_app = Flask('')
 @flask_app.route('/')
