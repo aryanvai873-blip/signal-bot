@@ -1,50 +1,107 @@
+import os, random, datetime
 import telebot
 from telebot import types
-from flask import Flask
-import threading
-import os
 
-BOT_TOKEN = "8740724012:AAEPwE-ugiB-cXjDF-cWBnZ4LMU1dehaYQ8"
-CHANNEL_ID = "@sl_communty"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# তোমার সব লিংক
+MAIN_USERNAME = "@ARYAN_VAI12"
+SECOND_USERNAME = "@TRADER_TAHMID_VAI"
 CHANNEL_LINK = "https://t.me/sl_communty"
 SITE_LINK = "https://bdxaryan35.12bajeevip.com/register.html"
 
-bot = telebot.TeleBot(BOT_TOKEN)
-app = Flask(name)
-
-@app.route('/')
-def home()
-    return "ARYAN VAI VIP BOT LIVE"
-
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(
-        types.InlineKeyboardButton("1️⃣ Channel Join করো", url=CHANNEL_LINK),
-        types.InlineKeyboardButton("2️⃣ Site এ Register করো", url=SITE_LINK),
-        types.InlineKeyboardButton("🔄 Check করে Bot Start করো ✅", callback_data="check_join")
-    )
-    bot.send_message(message.chat.id, f"🔥 ARYAN VAI VIP BOT চালু করতে ২টা কাজ করো:\n\n1. Channel @sl_communty তে Join করো\n2. Site এ Register করো\n\nতারপর Check বাটনে ক্লিক করো 👇", reply_markup=markup)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    # ৫টা বাটন
+    markup.add("GET REAL SIGNAL", "ABOUT BOT", "MY ID", "HELP", "BACKUP ID")
+    
+    txt = f"""
+<b>🔥 ARYAN VAI - AVIATOR VIP BOT 🔥</b>
 
-@bot.callback_query_handler(func=lambda call: True)
-def check(call):
-    if call.data == "check_join":
-        try:
-            m = bot.get_chat_member(CHANNEL_ID, call.from_user.id)
-            if m.status in ['member','administrator','creator']:
-                mk = types.InlineKeyboardMarkup(row_width=2)
-                mk.add(types.InlineKeyboardButton("📈 GET SIGNAL", callback_data="sig"), types.InlineKeyboardButton("📊 MARKET", callback_data="mkt"))
-                mk.add(types.InlineKeyboardButton("🎮 GAME LINK", url=SITE_LINK))
-                bot.send_message(call.message.chat.id, "✅ ভেরিফাইড! Welcome!\n🔥 ARYAN VAI VIP BOT 🔥", reply_markup=mk)
-            else:
-                bot.answer_callback_query(call.id, "❌ আগে @sl_communty তে Join করো!", show_alert=True)
-        except:
-            bot.answer_callback_query(call.id, "❌ Bot কে চ্যানেলে Admin বানাও!", show_alert=True)
-    elif call.data == "sig":
-        bot.send_message(call.message.chat.id, "📡 SIGNAL: USD/JPY UP 🟢 1 MIN")
+<b>🆔 ID:</b> 0424
+<b>Status:</b> ONLINE 🟢
+<b>Mode:</b> AVIATOR PREMIUM
 
-def run_bot():
-    bot.infinity_polling()
+<b>🔗 Channel:</b> {CHANNEL_LINK}
+<b>🌐 Site:</b> {SITE_LINK}
 
-threading.Thread(target=run_bot).start()
-app.run(host='0.0.0.0', port=8080)
+নিচ থেকে বাটনে ক্লিক করো 👇
+"""
+    bot.send_message(message.chat.id, txt, parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(func=lambda m: True)
+def all_handler(message):
+    text = message.text or ""
+    chat_id = message.chat.id
+    user_id = message.from_user.id
+    name = message.from_user.first_name
+
+    if "REAL SIGNAL" in text:
+        # Aviator সিগন্যাল - এটা Practice এর জন্য Random
+        target = round(random.uniform(1.30, 3.50), 2)
+        safe1 = round(target - 0.3, 2)
+        crash_prob = random.choice(["LOW RISK", "MEDIUM RISK", "HIGH RISK"])
+        
+        msg = f"""
+<b>━━━━━━━━━━━━━━━━━━</b>
+<b>✈️ AVIATOR VIP SIGNAL ✈️</b>
+<b>━━━━━━━━━━━━━━━━━━</b>
+
+<b>🎯 TARGET:</b> {target}x
+<b>🛡️ SAFE CASHOUT 1:</b> {safe1}x
+<b>⚠️ RISK:</b> {crash_prob}
+<b>⏰ TIME:</b> {datetime.datetime.now().strftime('%H:%M:%S')}
+
+<b>🆔 Signal ID:</b> <code>AV-0424-{random.randint(1000,9999)}</code>
+
+<b>💡 Note:</b> Practice Signal - 100% না
+
+<b>━━━━━━━━━━━━━━━━━━</b>
+<b>🔗 Channel:</b> {CHANNEL_LINK}
+<b>🌐 Site:</b> {SITE_LINK}
+<b>━━━━━━━━━━━━━━━━━━</b>
+"""
+        bot.send_message(chat_id, msg, parse_mode="HTML")
+
+    elif "ABOUT" in text:
+        bot.send_message(chat_id, 
+            f"<b>🤖 ABOUT BOT</b>\n\n"
+            f"<b>Name:</b> ARYAN AVIATOR BOT\n"
+            f"<b>ID:</b> 0424\n"
+            f"<b>Version:</b> VIP Premium\n"
+            f"<b>Channel:</b> {CHANNEL_LINK}\n"
+            f"<b>Site:</b> {SITE_LINK}",
+            parse_mode="HTML")
+
+    elif "MY ID" in text:
+        bot.send_message(chat_id, 
+            f"<b>🆔 YOUR INFO</b>\n\n"
+            f"<b>Name:</b> {name}\n"
+            f"<b>User ID:</b> <code>{user_id}</code>\n"
+            f"<b>Bot:</b> @YourBot\n"
+            f"<b>Channel:</b> {CHANNEL_LINK}",
+            parse_mode="HTML")
+
+    elif "HELP" in text:
+        bot.send_message(chat_id, 
+            f"<b>🆘 MAIN SUPPORT</b>\n\n"
+            f"<b>📩 Main ID:</b> {MAIN_USERNAME}\n"
+            f"<b>🔗 Channel:</b> {CHANNEL_LINK}\n"
+            f"<b>🌐 Site:</b> {SITE_LINK}\n\n"
+            f"যেকোনো সমস্যায় Main ID তে মেসেজ দাও",
+            parse_mode="HTML")
+
+    elif "BACKUP" in text:
+        bot.send_message(chat_id, 
+            f"<b>🔐 BACKUP SUPPORT</b>\n\n"
+            f"<b>📩 Backup ID:</b> {SECOND_USERNAME}\n"
+            f"<b>🔗 Channel:</b> {CHANNEL_LINK}\n"
+            f"<b>🌐 Site:</b> {SITE_LINK}\n\n"
+            f"Main ID না পেলে Backup এ মেসেজ দাও",
+            parse_mode="HTML")
+
+print("BOT RUNNING - AVIATOR WITH 5 BUTTONS")
+bot.infinity_polling()
