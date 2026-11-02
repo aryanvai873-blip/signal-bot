@@ -4,7 +4,7 @@ from flask import Flask
 import threading
 
 # ===== এখানে তোমার বটের টোকেন বসাও =====
-BOT_TOKEN = "8300000000:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+BOT_TOKEN = "8740724012:AAEPwE-ugiB-cXjDF-cWBnZ4LMU1dehaYQ8
 CHANNEL_ID = "@sl_communty" # তোমার চ্যানেলের username
 CHANNEL_LINK = "https://t.me/sl_communty"
 SITE_LINK = "https://bdxaryan35.12bajeevip.com/register.html"
