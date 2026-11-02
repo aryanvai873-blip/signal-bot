@@ -1,107 +1,67 @@
-import os, random, datetime
+import os, random, datetime, io
+from PIL import Image, ImageDraw, ImageFont
 import telebot
 from telebot import types
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# তোমার সব লিংক
-MAIN_USERNAME = "@ARYAN_VAI12"
-SECOND_USERNAME = "@TRADER_TAHMID_VAI"
 CHANNEL_LINK = "https://t.me/sl_communty"
 SITE_LINK = "https://bdxaryan35.12bajeevip.com/register.html"
+MAIN_USERNAME = "@ARYAN_VAI12"
+SECOND_USERNAME = "@TRADER_TAHMID_VAI"
+
+def create_signal_image(multiplier):
+    # 800x450 ছবি বানাবে
+    img = Image.new('RGB', (800, 450), color=(15, 15, 15))
+    draw = ImageDraw.Draw(img)
+    
+    # লাল বর্ডার
+    draw.rectangle([(0,0),(800,450)], outline=(255,0,0), width=5)
+    
+    # বড় করে গুণ লেখা
+    try:
+        font_big = ImageFont.truetype("arial.ttf", 120)
+        font_small = ImageFont.truetype("arial.ttf", 35)
+    except:
+        font_big = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+
+    draw.text((250, 30), "AVIATOR", fill=(255,0,0), font=font_small)
+    draw.text((200, 120), f"{multiplier}x", fill=(255, 30, 30), font=font_big)
+    draw.text((120, 300), f"TAKE PROFIT / CASHOUT: {multiplier}x", fill=(255,255,255), font=font_small)
+    draw.text((250, 360), f"ID: 0424 | {datetime.datetime.now().strftime('%H:%M:%S')}", fill=(180,180,180), font=font_small)
+    
+    bio = io.BytesIO()
+    img.save(bio, 'PNG')
+    bio.seek(0)
+    return bio
 
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    # ৫টা বাটন
     markup.add("GET REAL SIGNAL", "ABOUT BOT", "MY ID", "HELP", "BACKUP ID")
-    
-    txt = f"""
-<b>🔥 ARYAN VAI - AVIATOR VIP BOT 🔥</b>
-
-<b>🆔 ID:</b> 0424
-<b>Status:</b> ONLINE 🟢
-<b>Mode:</b> AVIATOR PREMIUM
-
-<b>🔗 Channel:</b> {CHANNEL_LINK}
-<b>🌐 Site:</b> {SITE_LINK}
-
-নিচ থেকে বাটনে ক্লিক করো 👇
-"""
+    txt = f"<b>🔥 ARYAN VAI - AVIATOR VIP BOT 🔥</b>\n\n<b>ID:</b> 0424\n<b>Status:</b> ONLINE 🟢\n<b>Mode:</b> AVIATOR PREMIUM\n\n<b>🔗 Channel:</b> {CHANNEL_LINK}\n<b>🌐 Site:</b> {SITE_LINK}\n\nনিচ থেকে বাটনে ক্লিক করো 👇"
     bot.send_message(message.chat.id, txt, parse_mode="HTML", reply_markup=markup)
 
 @bot.message_handler(func=lambda m: True)
 def all_handler(message):
-    text = message.text or ""
-    chat_id = message.chat.id
-    user_id = message.from_user.id
-    name = message.from_user.first_name
+    txt = (message.text or "").lower()
+    if "real signal" in txt:
+        target = round(random.uniform(1.35, 5.0), 2)
+        img_file = create_signal_image(target)
+        caption = f"<b>✈️ AVIATOR SIGNAL: {target}x</b>\n<b>🛡️ SAFE:</b> {round(target-0.3,2)}x\n<b>🆔 AV-0424-{random.randint(1000,9999)}</b>"
+        # এখানে disable_web_page_preview=True তাই লিংকের প্রিভিউ আসবে না
+        bot.send_photo(message.chat.id, img_file, caption=caption, parse_mode="HTML")
 
-    if "REAL SIGNAL" in text:
-        # Aviator সিগন্যাল - এটা Practice এর জন্য Random
-        target = round(random.uniform(1.30, 3.50), 2)
-        safe1 = round(target - 0.3, 2)
-        crash_prob = random.choice(["LOW RISK", "MEDIUM RISK", "HIGH RISK"])
-        
-        msg = f"""
-<b>━━━━━━━━━━━━━━━━━━</b>
-<b>✈️ AVIATOR VIP SIGNAL ✈️</b>
-<b>━━━━━━━━━━━━━━━━━━</b>
+    elif "about" in txt:
+        bot.send_message(message.chat.id, "<b>ABOUT:</b> VIP BOT ID 0424", parse_mode="HTML", disable_web_page_preview=True)
+    elif "my id" in txt:
+        bot.send_message(message.chat.id, f"<b>YOUR ID:</b> <code>{message.from_user.id}</code>", parse_mode="HTML")
+    elif "help" in txt:
+        bot.send_message(message.chat.id, f"<b>MAIN:</b> {MAIN_USERNAME}", parse_mode="HTML")
+    elif "backup" in txt:
+        bot.send_message(message.chat.id, f"<b>BACKUP:</b> {SECOND_USERNAME}", parse_mode="HTML")
 
-<b>🎯 TARGET:</b> {target}x
-<b>🛡️ SAFE CASHOUT 1:</b> {safe1}x
-<b>⚠️ RISK:</b> {crash_prob}
-<b>⏰ TIME:</b> {datetime.datetime.now().strftime('%H:%M:%S')}
-
-<b>🆔 Signal ID:</b> <code>AV-0424-{random.randint(1000,9999)}</code>
-
-<b>💡 Note:</b> Practice Signal - 100% না
-
-<b>━━━━━━━━━━━━━━━━━━</b>
-<b>🔗 Channel:</b> {CHANNEL_LINK}
-<b>🌐 Site:</b> {SITE_LINK}
-<b>━━━━━━━━━━━━━━━━━━</b>
-"""
-        bot.send_message(chat_id, msg, parse_mode="HTML")
-
-    elif "ABOUT" in text:
-        bot.send_message(chat_id, 
-            f"<b>🤖 ABOUT BOT</b>\n\n"
-            f"<b>Name:</b> ARYAN AVIATOR BOT\n"
-            f"<b>ID:</b> 0424\n"
-            f"<b>Version:</b> VIP Premium\n"
-            f"<b>Channel:</b> {CHANNEL_LINK}\n"
-            f"<b>Site:</b> {SITE_LINK}",
-            parse_mode="HTML")
-
-    elif "MY ID" in text:
-        bot.send_message(chat_id, 
-            f"<b>🆔 YOUR INFO</b>\n\n"
-            f"<b>Name:</b> {name}\n"
-            f"<b>User ID:</b> <code>{user_id}</code>\n"
-            f"<b>Bot:</b> @YourBot\n"
-            f"<b>Channel:</b> {CHANNEL_LINK}",
-            parse_mode="HTML")
-
-    elif "HELP" in text:
-        bot.send_message(chat_id, 
-            f"<b>🆘 MAIN SUPPORT</b>\n\n"
-            f"<b>📩 Main ID:</b> {MAIN_USERNAME}\n"
-            f"<b>🔗 Channel:</b> {CHANNEL_LINK}\n"
-            f"<b>🌐 Site:</b> {SITE_LINK}\n\n"
-            f"যেকোনো সমস্যায় Main ID তে মেসেজ দাও",
-            parse_mode="HTML")
-
-    elif "BACKUP" in text:
-        bot.send_message(chat_id, 
-            f"<b>🔐 BACKUP SUPPORT</b>\n\n"
-            f"<b>📩 Backup ID:</b> {SECOND_USERNAME}\n"
-            f"<b>🔗 Channel:</b> {CHANNEL_LINK}\n"
-            f"<b>🌐 Site:</b> {SITE_LINK}\n\n"
-            f"Main ID না পেলে Backup এ মেসেজ দাও",
-            parse_mode="HTML")
-
-print("BOT RUNNING - AVIATOR WITH 5 BUTTONS")
+print("BOT WITH IMAGE RUNNING")
 bot.infinity_polling()
