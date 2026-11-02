@@ -1,64 +1,77 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+import telebot
+from telebot import types
+from flask import Flask
+import threading
 
-# --- এখানে তোমার ইনফো বসানো আছে ---
-BOT_TOKEN = "এখানে তোমার BotFather এর Token বসাও"
-SITE_LINK = "https://bdxaryan35.12bajeevip.com/register.html"
+BOT_TOKEN = "এখানে তোমার বটের টোকেন বসাও - আগেরটাই"
 CHANNEL_LINK = "https://t.me/sl_communty"
-CHANNEL_USERNAME = "@sl_communty"
+SITE_LINK = "https://bdxaryan35.12bajeevip.com/register.html"
+CHANNEL_ID = "@sl_communty"
 
-def main_menu_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("📡 ARYAN VAI SIGNAL", callback_data='signal')],
-        [InlineKeyboardButton("🎮 AVIATOR GAME LINK", url=SITE_LINK)],
-        [InlineKeyboardButton("💰 DEPOSIT / WITHDRAW", callback_data='deposit')],
-        [InlineKeyboardButton("📊 TODAY RESULT", callback_data='result')],
-        [InlineKeyboardButton("📞 SUPPORT", url=CHANNEL_LINK)]
-    ]
-    return InlineKeyboardMarkup(keyboard)
+bot = telebot.TeleBot(BOT_TOKEN)
+app = Flask(__name__)
 
-def join_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("1️⃣ Channel Join করো", url=CHANNEL_LINK)],
-        [InlineKeyboardButton("2️⃣ Site এ Register করো", url=SITE_LINK)],
-        [InlineKeyboardButton("🔄 Check করে Bot Start করো ✅", callback_data='check_join')]
-    ]
-    return InlineKeyboardMarkup(keyboard)
+@app.route('/')
+def home():
+    return "ARYAN VAI VIP BOT LIVE"
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 আসসালামু আলাইকুম!\n\nARYAN VAI BOT চালু করতে নিচের ২ টা কাজ করো:\n\n1. আমাদের Channel @sl_communty তে Join করো\n2. সাইটে Register করো\n\nতারপর Check বাটনে ক্লিক করো 👇",
-        reply_markup=join_keyboard()
+def join_menu():
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        types.InlineKeyboardButton("1️⃣ Channel Join করো", url=CHANNEL_LINK),
+        types.InlineKeyboardButton("2️⃣ Site এ Register করো", url=SITE_LINK),
+        types.InlineKeyboardButton("🔄 Check করে Bot Start করো ✅", callback_data="check_join")
+    )
+    return markup
+
+def main_menu():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("📈 GET SIGNAL", callback_data="get_signal"),
+        types.InlineKeyboardButton("📊 MARKET", callback_data="market"),
+        types.InlineKeyboardButton("💬 SUPPORT", callback_data="support"),
+        types.InlineKeyboardButton("ℹ️ HELP", callback_data="help"),
+        types.InlineKeyboardButton("🎮 GAME LINK", url=SITE_LINK)
+    )
+    return markup
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(
+        message.chat.id,
+        f"🔥 ARYAN VAI VIP BOT চালু করতে ২টা কাজ করো:\n\n1. Channel @sl_communty তে Join করো\n2. Site এ Register করো\n\nতারপর Check বাটনে ক্লিক করো 👇",
+        reply_markup=join_menu()
     )
 
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-
-    if query.data == 'check_join':
+@bot.callback_query_handler(func=lambda call: True)
+def callback(call):
+    if call.data == "check_join":
         try:
-            member = await context.bot.get_chat_member(CHANNEL_USERNAME, query.from_user.id)
-            if member.status in ['member', 'administrator', 'creator']:
-                await query.edit_message_text(
-                    "✅ ভেরিফাইড! Welcome to ARYAN VAI BOT 👇\n\nনিচ থেকে অপশন সিলেক্ট করো:",
-                    reply_markup=main_menu_keyboard()
+            check = bot.get_chat_member(CHANNEL_ID, call.from_user.id)
+            if check.status in ['member', 'administrator', 'creator']:
+                bot.edit_message_text(
+                    "🔥 ARYAN VAI VIP BOT 🔥\n\nWelcome! বট অনলাইন ✅\nনিচ থেকে সিলেক্ট করো:",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=main_menu()
                 )
             else:
-                await query.answer("❌ ভাই আগে চ্যানেলে Join করো, তারপর Check দাও!", show_alert=True)
-        except Exception as e:
-            print(e)
-            await query.answer("❌ Bot টিকে চ্যানেলের Admin বানাও নাই। আগে Admin বানাও!", show_alert=True)
+                bot.answer_callback_query(call.id, "❌ আগে @sl_communty তে Join করো!", show_alert=True)
+        except:
+            bot.answer_callback_query(call.id, "❌ Bot কে চ্যানেলের Admin বানাও!", show_alert=True)
 
-    elif query.data == 'signal':
-        await query.edit_message_text("📡 Signal আসছে... এইখানে তুমি তোমার Signal লেখা বসাতে পারবে।", reply_markup=main_menu_keyboard())
-    elif query.data == 'deposit':
-        await query.edit_message_text(f"💰 Deposit করতে এই লিংকে যাও:\n{SITE_LINK}", reply_markup=main_menu_keyboard())
-    elif query.data == 'result':
-        await query.edit_message_text("📊 আজকের রেজাল্ট: Win ✅", reply_markup=main_menu_keyboard())
+    elif call.data == "get_signal":
+        bot.send_message(call.message.chat.id, "📡 SIGNAL\n\nPair: USD/JPY\nDir: UP 🟢\nTime: 1 MIN", reply_markup=types.InlineKeyboardMarkup().add(types.InlineKeyboardButton("📈 NEXT SIGNAL", callback_data="get_signal")))
 
-app = Application.builder().token(BOT_TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(button_handler))
+    elif call.data == "market":
+        bot.answer_callback_query(call.id, "Market Opening Soon!")
+    elif call.data == "support":
+        bot.send_message(call.message.chat.id, f"Support: {CHANNEL_LINK}")
+    elif call.data == "help":
+        bot.send_message(call.message.chat.id, "Help: /start দিয়ে শুরু করো")
 
-print("Bot is running... @sl_communty Bot")
-app.run_polling()
+def run_bot():
+    bot.infinity_polling()
+
+threading.Thread(target=run_bot).start()
+app.run(host='0.0.0.0', port=8080)
